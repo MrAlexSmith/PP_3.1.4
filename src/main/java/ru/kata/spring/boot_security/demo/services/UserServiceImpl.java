@@ -1,6 +1,7 @@
 package ru.kata.spring.boot_security.demo.services;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,19 @@ public class UserServiceImpl implements UserService, UserDetailsService {
     @Override
     @Transactional
     public void saveUser(User user) {
-        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
+        String password = user.getPassword();
+        String oldPassword = "";
+
+        User existingUser = userRepository.getUser(user.getId());
+
+        if (existingUser != null) {
+            oldPassword = existingUser.getPassword();
+        }
+
+        if (!Objects.equals(password, oldPassword)) {
+            user.setPassword(new BCryptPasswordEncoder().encode(password));
+        }
+
         userRepository.saveUser(user);
     }
 
